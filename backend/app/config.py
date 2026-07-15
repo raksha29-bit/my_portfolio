@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     # CORS configurations
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     
+    # Authentication & Security configurations
+    SECRET_KEY: str = Field(..., validation_alias="SECRET_KEY")
+    ADMIN_EMAIL: str = Field(..., validation_alias="ADMIN_EMAIL")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
 
 settings = Settings()
+

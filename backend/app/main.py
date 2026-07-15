@@ -16,6 +16,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.api.v1.api import api_router
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
+from fastapi.staticfiles import StaticFiles
+import os
+
+os.makedirs("app/static/uploads", exist_ok=True)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+
 @app.get("/")
 async def root():
     return {
