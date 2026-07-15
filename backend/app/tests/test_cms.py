@@ -206,3 +206,58 @@ def test_media_manager_and_storage_provider(headers, db):
     response_delete = client.delete(f"{settings.API_V1_STR}/media/{media['id']}", headers=headers)
     assert response_delete.status_code == 200
     assert response_delete.json()["message"] == "Media item deleted successfully"
+
+
+def test_public_slug_lookups(headers, db):
+    # 1. Create a section
+    sec_payload = {
+        "name": "Lookups Section",
+        "slug": "lookups-sec",
+        "icon": "🔮",
+        "allowed_content_types": ["text"],
+        "display_order": 0,
+        "is_active": True
+    }
+    sec_response = client.post(f"{settings.API_V1_STR}/portfolio/sections", json=sec_payload, headers=headers)
+    assert sec_response.status_code == 201
+    sec = sec_response.json()
+
+    # 2. Create a published item under it
+    item_payload = {
+        "section_id": sec["id"],
+        "title": "A Fine Masterpiece Project",
+        "description": "Short desc",
+        "content_body": "Long body",
+        "custom_metadata": {"slug": "custom-art-slug"},
+        "status": "published",
+        "display_order": 0
+    }
+    item_response = client.post(f"{settings.API_V1_STR}/portfolio/items", json=item_payload, headers=headers)
+    assert item_response.status_code == 201
+    item = item_response.json()
+
+    # 3. Retrieve section by slug
+    response_sec = client.get(f"{settings.API_V1_STR}/portfolio/sections/by-slug/lookups-sec")
+    assert response_sec.status_code == 200
+    assert response_sec.json()["id"] == sec["id"]
+
+    # 4. Retrieve item by metadata custom slug
+    response_item1 = client.get(f"{settings.API_V1_STR}/portfolio/items/by-slug/custom-art-slug")
+    assert response_item1.status_code == 200
+    assert response_item1.json()["id"] == item["id"]
+
+    # 5. Retrieve item by dynamically computed title slug
+    response_item2 = client.get(f"{settings.API_V1_STR}/portfolio/items/by-slug/a-fine-masterpiece-project")
+    assert response_item2.status_code == 200
+    assert response_item2.json()["id"] == item["id"]
+
+    # Clean up
+    db_item = portfolio_service.get_item(db, uuid.UUID(item["id"]))
+    db_sec = portfolio_service.get_section(db, uuid.UUID(sec["id"]))
+    if db_item:
+        db.query(portfolio_service.PortfolioItemVersion).filter_by(portfolio_item_id=db_item.id).delete()
+        db.delete(db_item)
+    if db_sec:
+        db.delete(db_sec)
+    db.commit()
+

@@ -218,3 +218,51 @@ def get_item_history(
         )
     # The history endpoint is now fully functional!
     return portfolio_service.get_item_history(db, item_id=id)
+
+
+@router.get("/sections/by-slug/{slug}", response_model=PortfolioSectionOut)
+def get_section_by_slug(
+    slug: str,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Retrieve details of a portfolio section by its slug (public access).
+    """
+    db_section = portfolio_service.get_section_by_slug(db, slug=slug)
+    if not db_section or not db_section.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section not found or disabled.",
+        )
+    return db_section
+
+
+@router.get("/items/by-slug/{slug}", response_model=PortfolioItemOut)
+def get_item_by_slug(
+    slug: str,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Retrieve a public portfolio item by its title slug or custom metadata slug (public access).
+    """
+    import re
+    # Fetch all active (non-deleted, published) items
+    items = db.query(portfolio_service.PortfolioItem).filter(
+        portfolio_service.PortfolioItem.is_deleted == False,
+        portfolio_service.PortfolioItem.status == "published",
+    ).all()
+
+    for item in items:
+        # Match slug defined in custom metadata
+        if item.custom_metadata and item.custom_metadata.get("slug") == slug:
+            return item
+        # Match dynamic slugified title
+        computed_slug = re.sub(r"[^a-z0-9]+", "-", item.title.lower()).strip("-")
+        if computed_slug == slug:
+            return item
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Portfolio item not found.",
+    )
+

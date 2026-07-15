@@ -9,6 +9,8 @@ import MediaManager from './components/MediaManager';
 import Settings from './components/Settings';
 import LandingPage from './components/LandingPage';
 import WorldPage from './components/WorldPage';
+import PortfolioSectionPage from './components/PortfolioSectionPage';
+import PortfolioItemDetail from './components/PortfolioItemDetail';
 
 // Helper to determine navbar title from route path
 function getPageTitle(pathname) {
@@ -69,6 +71,8 @@ function App() {
         {/* Public Landing Experience */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/world" element={<WorldPage />} />
+        <Route path="/world/section/:sectionSlug" element={<PortfolioSectionPage />} />
+        <Route path="/world/item/:itemSlug" element={<PortfolioItemDetail />} />
 
         {/* Unauthenticated Login Route */}
         <Route
