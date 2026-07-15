@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Background from './Background';
-import { Sparkles, HelpCircle } from 'lucide-react';
+import { Sparkles, Shield } from 'lucide-react';
 
 export default function WorldPage() {
   const [sections, setSections] = useState([]);
@@ -56,6 +56,29 @@ export default function WorldPage() {
       {/* Starry Night Atmosphere */}
       <Background />
 
+      {/* Development Admin Access Link */}
+      <Link
+        to="/login"
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          left: '24px',
+          zIndex: 100,
+          fontSize: '12px',
+          color: 'rgba(255, 255, 255, 0.25)',
+          textDecoration: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          transition: 'color 0.2s ease',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-color)'}
+        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.25)'}
+      >
+        <Shield size={12} />
+        <span>Admin Portal</span>
+      </Link>
+
       {/* Header Info */}
       <div
         className="fade-in"
@@ -106,9 +129,57 @@ export default function WorldPage() {
           Aligning constellations...
         </div>
       ) : sections.length === 0 ? (
-        <div style={{ color: 'var(--text-secondary)', padding: '60px', zIndex: 10, textAlign: 'center' }}>
-          No active constellations discovered. Set sections to Active in the CMS.
+        <div
+          className="fade-in"
+          style={{
+            maxWidth: '480px',
+            width: '100%',
+            padding: '40px 32px',
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.04) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '16px',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            zIndex: 10,
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              padding: '14px',
+              backgroundColor: 'var(--accent-light)',
+              borderRadius: '50%',
+              color: 'var(--accent-color)',
+              marginBottom: '20px',
+            }}
+          >
+            <Sparkles size={24} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ffffff' }}>
+            No Active Constellations Discovered
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>
+            No portfolio sections exist yet. Create your first section (Projects, Artwork, Resume, etc.) in the CMS to populate this world.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="btn btn-primary btn-sm"
+            style={{
+              padding: '10px 24px',
+              borderRadius: '24px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+            }}
+          >
+            Go to Admin CMS
+          </button>
         </div>
+
       ) : (
         /* Constellation map flex grid */
         <div

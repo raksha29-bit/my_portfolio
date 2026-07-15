@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Background from './Background';
 import LoadingScreen from './LoadingScreen';
 import AudioController from './AudioController';
 import MascotArea from './MascotArea';
 import DialogueBox from './DialogueBox';
 import TransitionOverlay from './TransitionOverlay';
+import { Shield } from 'lucide-react';
 
 const LANDING_DIALOGUES = [
   { id: 1, speaker: 'Sakura', text: 'Welcome.' },
@@ -55,8 +56,34 @@ export default function LandingPage() {
       {/* Audio Indicator */}
       {!loading && <AudioController />}
 
+      {/* Development Admin Access Link */}
+      {!loading && (
+        <Link
+          to="/login"
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '24px',
+            zIndex: 100,
+            fontSize: '12px',
+            color: 'rgba(255, 255, 255, 0.25)',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'color 0.2s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-color)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.25)'}
+        >
+          <Shield size={12} />
+          <span>Admin Portal</span>
+        </Link>
+      )}
+
       {/* Nav Transition Overlay */}
       <TransitionOverlay active={startTransition} onTransitionEnd={handleTransitionEnd} />
+
 
       {!loading && (
         <>

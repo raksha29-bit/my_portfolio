@@ -41,3 +41,16 @@ async def health_check():
         "status": "healthy",
         "project": settings.PROJECT_NAME
     }
+
+
+from app.database import SessionLocal
+from app.core.seeding import seed_database
+
+@app.on_event("startup")
+def startup_event():
+    db = SessionLocal()
+    try:
+        seed_database(db)
+    finally:
+        db.close()
+
