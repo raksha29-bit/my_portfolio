@@ -17,14 +17,13 @@ def seed_database(db: Session):
         )
         admin = user_service.create_user(db, user_in=user_in)
 
-    # 2. Check if custom sections already exist (excluding 'global')
+    # 2. Check if custom sections already exist (excluding 'global', including soft-deleted ones)
     custom_secs = db.query(PortfolioSection).filter(
-        PortfolioSection.slug != "global",
-        PortfolioSection.is_deleted == False
+        PortfolioSection.slug != "global"
     ).count()
 
     if custom_secs > 0:
-        # Database already has content, skip seeding sample portfolio
+        # Database already has custom content or has been seeded before, skip seeding
         return
 
     # 3. Create Sample Sections
