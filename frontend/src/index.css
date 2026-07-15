@@ -432,3 +432,51 @@ textarea.form-control {
   color: var(--accent-color);
   border-bottom-color: var(--accent-color);
 }
+
+/* ==============================================================================
+   Landing Experience Animations & Keyframes
+   ============================================================================== */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

@@ -7,6 +7,8 @@ import DashboardHome from './components/DashboardHome';
 import PortfolioInventory from './components/PortfolioInventory';
 import MediaManager from './components/MediaManager';
 import Settings from './components/Settings';
+import LandingPage from './components/LandingPage';
+import WorldPage from './components/WorldPage';
 
 // Helper to determine navbar title from route path
 function getPageTitle(pathname) {
@@ -64,6 +66,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Landing Experience */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/world" element={<WorldPage />} />
+
         {/* Unauthenticated Login Route */}
         <Route
           path="/login"
@@ -86,11 +92,12 @@ function App() {
           </Route>
         </Route>
 
-        {/* Catch-all redirect to Dashboard */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Catch-all redirect to public landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+
