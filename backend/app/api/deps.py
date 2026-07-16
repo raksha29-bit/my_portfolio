@@ -53,12 +53,21 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = user_service.get_user_by_email(db, email=token_data.sub)
+    user = user_service.get_user_by_username_or_email(db, identifier=token_data.sub)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
+        
+    # Verify token version matches database user
+    if token_data.token_version is not None and token_data.token_version != user.token_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has expired or been invalidated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
     return user
 
 
@@ -73,7 +82,7 @@ def get_current_active_admin(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user",
         )
-    if current_user.email != settings.ADMIN_EMAIL:
+    if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user does not have administrative privileges",

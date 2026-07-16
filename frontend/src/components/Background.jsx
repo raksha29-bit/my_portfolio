@@ -26,7 +26,7 @@ export default function Background() {
         right: 0,
         bottom: 0,
         zIndex: -10,
-        background: 'linear-gradient(to bottom, #030310 0%, #070720 50%, #0d0b30 100%)',
+        background: 'var(--bg-sky-gradient)',
         overflow: 'hidden',
         pointerEvents: 'none',
       }}
@@ -39,7 +39,7 @@ export default function Background() {
           right: '10%',
           width: '700px',
           height: '700px',
-          background: 'radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, rgba(99, 102, 241, 0.04) 50%, rgba(0,0,0,0) 70%)',
+          background: 'var(--glow-top-bg)',
           borderRadius: '50%',
           filter: 'blur(80px)',
         }}
@@ -53,11 +53,17 @@ export default function Background() {
           left: '-5%',
           width: '800px',
           height: '800px',
-          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.05) 0%, rgba(139, 92, 246, 0.02) 60%, rgba(0,0,0,0) 80%)',
+          background: 'var(--glow-bottom-bg)',
           borderRadius: '50%',
           filter: 'blur(100px)',
         }}
       />
+
+      {/* Twilight Clouds */}
+      <div className="twilight-clouds" style={{ opacity: 'var(--cloud-opacity, 0)', transition: 'opacity var(--transition-speed) var(--transition-easing)' }}>
+        <div className="cloud cloud-1" />
+        <div className="cloud cloud-2" />
+      </div>
 
       {/* Stars Grid */}
       {stars.map((star) => (
@@ -72,7 +78,7 @@ export default function Background() {
             height: `${star.size}px`,
             backgroundColor: '#ffffff',
             borderRadius: '50%',
-            opacity: 0.1,
+            opacity: 'var(--star-opacity-min, 0.1)',
             animation: `twinkle ${star.duration} infinite ease-in-out`,
             animationDelay: star.delay,
           }}

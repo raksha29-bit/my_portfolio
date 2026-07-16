@@ -2,28 +2,35 @@ import { useEffect, useState } from 'react';
 import { User as UserIcon } from 'lucide-react';
 
 export default function TopNav({ pageTitle }) {
-  const [adminEmail, setAdminEmail] = useState('Admin');
+  const [adminInfo, setAdminInfo] = useState(null);
+
+  const fetchAdminInfo = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await fetch('/api/v1/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAdminInfo(data);
+      }
+    } catch (e) {
+      // Fallback
+    }
+  };
 
   useEffect(() => {
-    const fetchAdminInfo = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        if (!token) return;
-
-        const response = await fetch('/api/v1/auth/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setAdminEmail(data.email);
-        }
-      } catch (e) {
-        // Fallback to default
-      }
-    };
     fetchAdminInfo();
+
+    // Listen to custom event for profile changes
+    window.addEventListener('profile-updated', fetchAdminInfo);
+    return () => {
+      window.removeEventListener('profile-updated', fetchAdminInfo);
+    };
   }, []);
 
   return (
@@ -56,8 +63,19 @@ export default function TopNav({ pageTitle }) {
           color: 'var(--text-primary)',
         }}
       >
-        <UserIcon size={16} />
-        <span style={{ fontWeight: '500' }}>{adminEmail}</span>
+        {adminInfo?.avatar_url ? (
+          <img 
+            src={adminInfo.avatar_url} 
+            alt="Avatar" 
+            style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} 
+          />
+        ) : (
+          <UserIcon size={16} />
+        )}
+        <span style={{ fontWeight: '500' }}>
+          {adminInfo?.display_name || adminInfo?.email || 'Admin'}
+        </span>
+        {!adminInfo?.avatar_url && <span>👤</span>}
       </div>
     </div>
   );

@@ -142,12 +142,11 @@ export default function PortfolioItemDetail() {
               </div>
             )}
 
-            {/* Header info */}
             <div
               style={{
                 padding: '32px',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--glass-card-bg)',
+                border: 'var(--glass-card-border)',
                 borderRadius: '16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -155,9 +154,10 @@ export default function PortfolioItemDetail() {
                 boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
+                transition: 'background var(--transition-speed) var(--transition-easing), border-color var(--transition-speed) var(--transition-easing)',
               }}
             >
-              <h1 style={{ fontSize: '32px', fontWeight: '600', color: '#ffffff', margin: 0, letterSpacing: '0.5px' }}>
+              <h1 style={{ fontSize: '32px', fontWeight: '600', color: 'var(--text-title)', margin: 0, letterSpacing: '0.5px' }}>
                 {item.title}
               </h1>
 

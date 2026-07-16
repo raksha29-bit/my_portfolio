@@ -21,6 +21,16 @@ def get_user_by_email(db: Session, email: str) -> Optional[User]:
 
 
 
+def get_user_by_username_or_email(db: Session, identifier: str) -> Optional[User]:
+    """
+    Retrieve a user by their email or username.
+    """
+    return db.query(User).filter(
+        (User.email == identifier) | (User.username == identifier),
+        User.is_deleted == False
+    ).first()
+
+
 def create_user(db: Session, user_in: UserCreate) -> User:
     """
     Create a new user with a hashed password.
@@ -28,6 +38,9 @@ def create_user(db: Session, user_in: UserCreate) -> User:
     hashed_password = get_password_hash(user_in.password)
     db_user = User(
         email=user_in.email,
+        username=user_in.username,
+        display_name=user_in.display_name,
+        avatar_url=user_in.avatar_url,
         hashed_password=hashed_password,
         is_active=user_in.is_active,
     )
@@ -39,10 +52,16 @@ def create_user(db: Session, user_in: UserCreate) -> User:
 
 def update_user(db: Session, db_user: User, user_in: UserUpdate) -> User:
     """
-    Update an existing user's attributes (email, password, is_active).
+    Update an existing user's attributes (email, username, password, is_active, display_name, avatar_url).
     """
     if user_in.email is not None:
         db_user.email = user_in.email
+    if user_in.username is not None:
+        db_user.username = user_in.username
+    if user_in.display_name is not None:
+        db_user.display_name = user_in.display_name
+    if user_in.avatar_url is not None:
+        db_user.avatar_url = user_in.avatar_url
     if user_in.password is not None:
         db_user.hashed_password = get_password_hash(user_in.password)
     if user_in.is_active is not None:

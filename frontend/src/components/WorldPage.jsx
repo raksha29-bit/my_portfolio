@@ -105,7 +105,7 @@ export default function WorldPage() {
           style={{
             fontSize: '32px',
             fontWeight: '600',
-            color: '#ffffff',
+            color: 'var(--text-title)',
             margin: '0 0 16px 0',
             letterSpacing: '1px',
           }}
@@ -210,8 +210,8 @@ export default function WorldPage() {
                   cursor: 'pointer',
                   width: '260px',
                   height: '180px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'var(--glass-card-bg)',
+                  border: 'var(--glass-card-border)',
                   borderRadius: '24px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -219,17 +219,17 @@ export default function WorldPage() {
                   justifyContent: 'center',
                   padding: '24px',
                   boxSizing: 'border-box',
-                  transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transition: 'all var(--transition-speed) var(--transition-easing), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
                 className="constellation-node"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.05) translateY(-5px)';
-                  e.currentTarget.style.border = '1px solid rgba(167, 139, 250, 0.25)';
-                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(139, 92, 246, 0.15)';
+                  e.currentTarget.style.border = 'var(--glass-card-hover-border)';
+                  e.currentTarget.style.boxShadow = 'var(--glass-card-hover-shadow)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                  e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.border = 'var(--glass-card-border)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
@@ -252,7 +252,7 @@ export default function WorldPage() {
                   style={{
                     fontSize: '24px',
                     marginBottom: '16px',
-                    filter: 'drop-shadow(0 0 8px rgba(167, 139, 250, 0.6))',
+                    filter: 'drop-shadow(0 0 8px var(--glass-card-hover-glow))',
                     animation: 'pulse 3s infinite ease-in-out',
                   }}
                 >
@@ -264,7 +264,7 @@ export default function WorldPage() {
                   style={{
                     fontSize: '16px',
                     fontWeight: '600',
-                    color: '#ffffff',
+                    color: 'var(--text-title)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',

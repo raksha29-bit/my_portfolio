@@ -116,10 +116,10 @@ export default function PortfolioSectionPage() {
             {/* Hero Section Header */}
             <div style={{ marginBottom: '40px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '28px', filter: 'drop-shadow(0 0 8px rgba(167, 139, 250, 0.4))' }}>
+                <span style={{ fontSize: '28px', filter: 'drop-shadow(0 0 8px var(--glass-card-hover-glow))' }}>
                   {section.icon || '📁'}
                 </span>
-                <h1 style={{ fontSize: '28px', fontWeight: '600', color: '#ffffff', margin: 0 }}>
+                <h1 style={{ fontSize: '28px', fontWeight: '600', color: 'var(--text-title)', margin: 0 }}>
                   {section.name}
                 </h1>
               </div>

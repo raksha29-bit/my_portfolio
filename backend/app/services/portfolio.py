@@ -95,12 +95,42 @@ def reorder_sections(db: Session, section_ids: List[uuid.UUID]) -> bool:
 # Portfolio Items
 # ==============================================================================
 
+def enforce_single_active_resume(db: Session, section_id: uuid.UUID, current_item_id: Optional[uuid.UUID] = None):
+    # Fetch section to verify slug
+    sec = db.query(PortfolioSection).filter(PortfolioSection.id == section_id, PortfolioSection.is_deleted == False).first()
+    if sec and sec.slug == "resume":
+        # Find all other published items in this section and set them to draft
+        query = db.query(PortfolioItem).filter(
+            PortfolioItem.section_id == section_id,
+            PortfolioItem.status == "published",
+            PortfolioItem.is_deleted == False
+        )
+        if current_item_id:
+            query = query.filter(PortfolioItem.id != current_item_id)
+        other_items = query.all()
+        for item in other_items:
+            item.status = "draft"
+            item.current_version += 1
+            db.add(item)
+            db.flush()
+            db_version = PortfolioItemVersion(
+                portfolio_item_id=item.id,
+                version_number=item.current_version,
+                title=item.title,
+                description=item.description,
+                content_body=item.content_body,
+                custom_metadata=item.custom_metadata,
+                is_featured=item.is_featured,
+            )
+            db.add(db_version)
+
 def get_items(
     db: Session,
     section_id: Optional[uuid.UUID] = None,
     status: Optional[str] = None,
     include_deleted: bool = False,
     search: Optional[str] = None,
+    is_featured: Optional[bool] = None,
 ) -> List[PortfolioItem]:
     """
     List portfolio items, supporting filter parameters and queries.
@@ -112,6 +142,8 @@ def get_items(
         query = query.filter(PortfolioItem.section_id == section_id)
     if status:
         query = query.filter(PortfolioItem.status == status)
+    if is_featured is not None:
+        query = query.filter(PortfolioItem.is_featured == is_featured)
     if search:
         query = query.filter(
             (PortfolioItem.title.ilike(f"%{search}%"))
@@ -136,6 +168,11 @@ def create_item(
     """
     Create a new portfolio item and its initial version snapshot (v1).
     """
+    sec = db.query(PortfolioSection).filter(PortfolioSection.id == item_in.section_id, PortfolioSection.is_deleted == False).first()
+    is_feat = item_in.is_featured
+    if not sec or sec.slug not in ["projects", "artwork", "achievements"]:
+        is_feat = False
+
     db_item = PortfolioItem(
         section_id=item_in.section_id,
         title=item_in.title,
@@ -144,9 +181,15 @@ def create_item(
         custom_metadata=item_in.custom_metadata,
         status=item_in.status,
         display_order=item_in.display_order,
+        is_featured=is_feat,
         current_version=1,
     )
     db.add(db_item)
+    db.flush()
+
+    if db_item.status == "published":
+        enforce_single_active_resume(db, db_item.section_id, db_item.id)
+
     db.commit()
     db.refresh(db_item)
 
@@ -158,6 +201,7 @@ def create_item(
         description=db_item.description,
         content_body=db_item.content_body,
         custom_metadata=db_item.custom_metadata,
+        is_featured=db_item.is_featured,
         created_by_user_id=created_by_user_id,
     )
     db.add(db_version)
@@ -175,13 +219,23 @@ def update_item(
     """
     Update a portfolio item, incrementing the version and creating a version snapshot.
     """
-    for field in ["title", "description", "content_body", "custom_metadata", "status", "display_order", "section_id"]:
+    for field in ["title", "description", "content_body", "custom_metadata", "status", "display_order", "section_id", "is_featured"]:
         val = getattr(item_in, field)
         if val is not None:
             setattr(db_item, field, val)
+
+    # Enforce allowed sections for is_featured
+    sec = db.query(PortfolioSection).filter(PortfolioSection.id == db_item.section_id, PortfolioSection.is_deleted == False).first()
+    if not sec or sec.slug not in ["projects", "artwork", "achievements"]:
+        db_item.is_featured = False
             
     db_item.current_version += 1
     db.add(db_item)
+    db.flush()
+
+    if db_item.status == "published":
+        enforce_single_active_resume(db, db_item.section_id, db_item.id)
+
     db.commit()
     db.refresh(db_item)
 
@@ -193,6 +247,7 @@ def update_item(
         description=db_item.description,
         content_body=db_item.content_body,
         custom_metadata=db_item.custom_metadata,
+        is_featured=db_item.is_featured,
         created_by_user_id=created_by_user_id,
     )
     db.add(db_version)

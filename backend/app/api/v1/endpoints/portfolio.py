@@ -98,6 +98,7 @@ def list_items(
     status: Optional[str] = None,
     include_deleted: bool = False,
     search: Optional[str] = None,
+    is_featured: Optional[bool] = None,
 ) -> Any:
     """
     List portfolio items, supporting filter parameters and search queries.
@@ -108,6 +109,7 @@ def list_items(
         status=status,
         include_deleted=include_deleted,
         search=search,
+        is_featured=is_featured,
     )
 
 

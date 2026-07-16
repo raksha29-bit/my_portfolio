@@ -24,17 +24,21 @@ def db() -> Session:
 @pytest.fixture(scope="module")
 def admin_token(db: Session):
     existing = user_service.get_user_by_email(db, email=settings.ADMIN_EMAIL)
-    if not existing:
-        user_in = UserCreate(
-            email=settings.ADMIN_EMAIL,
-            password="adminpassword",
-            is_active=True
-        )
-        existing = user_service.create_user(db, user_in=user_in)
+    if existing:
+        db.delete(existing)
+        db.commit()
+    
+    user_in = UserCreate(
+        email=settings.ADMIN_EMAIL,
+        username="admin",
+        password="adminpassword",
+        is_active=True
+    )
+    user_service.create_user(db, user_in=user_in)
     
     response = client.post(
         f"{settings.API_V1_STR}/auth/login",
-        json={"email": settings.ADMIN_EMAIL, "password": "adminpassword"}
+        json={"email_or_username": settings.ADMIN_EMAIL, "password": "adminpassword"}
     )
     return response.json()["access_token"]
 
@@ -260,4 +264,163 @@ def test_public_slug_lookups(headers, db):
     if db_sec:
         db.delete(db_sec)
     db.commit()
+
+
+def test_featured_toggle_and_filtering(headers, db):
+    # Retrieve the seeded Projects section
+    sec = db.query(portfolio_service.PortfolioSection).filter_by(slug="projects").first()
+    assert sec is not None
+
+    # Create a featured item
+    item_payload_featured = {
+        "section_id": str(sec.id),
+        "title": "Featured Project",
+        "description": "Featured description",
+        "content_body": "Featured body",
+        "status": "published",
+        "is_featured": True,
+        "display_order": 0
+    }
+    response_feat = client.post(f"{settings.API_V1_STR}/portfolio/items", json=item_payload_featured, headers=headers)
+    assert response_feat.status_code == 201
+    feat_item = response_feat.json()
+    assert feat_item["is_featured"] is True
+
+    # Create a non-featured item
+    item_payload_normal = {
+        "section_id": str(sec.id),
+        "title": "Normal Project",
+        "description": "Normal description",
+        "content_body": "Normal body",
+        "status": "published",
+        "is_featured": False,
+        "display_order": 0
+    }
+    response_norm = client.post(f"{settings.API_V1_STR}/portfolio/items", json=item_payload_normal, headers=headers)
+    assert response_norm.status_code == 201
+    norm_item = response_norm.json()
+    assert norm_item["is_featured"] is False
+
+    # Try creating a featured item in a section that does not allow featured (e.g. contact)
+    contact_sec = db.query(portfolio_service.PortfolioSection).filter_by(slug="contact").first()
+    assert contact_sec is not None
+    item_payload_invalid = {
+        "section_id": str(contact_sec.id),
+        "title": "Invalid Featured Contact",
+        "description": "Contact desc",
+        "content_body": "Contact body",
+        "status": "published",
+        "is_featured": True,
+        "display_order": 0
+    }
+    response_inv = client.post(f"{settings.API_V1_STR}/portfolio/items", json=item_payload_invalid, headers=headers)
+    assert response_inv.status_code == 201
+    inv_item = response_inv.json()
+    # Should be False because 'contact' slug does not allow featured items
+    assert inv_item["is_featured"] is False
+
+    # Verify query parameter filtering
+    # 1. Filter is_featured = True
+    response_query_feat = client.get(f"{settings.API_V1_STR}/portfolio/items?is_featured=true")
+    assert response_query_feat.status_code == 200
+    feat_items = response_query_feat.json()
+    assert any(item["id"] == feat_item["id"] for item in feat_items)
+    assert not any(item["id"] == norm_item["id"] for item in feat_items)
+
+    # 2. Filter is_featured = False
+    response_query_norm = client.get(f"{settings.API_V1_STR}/portfolio/items?is_featured=false")
+    assert response_query_norm.status_code == 200
+    norm_items = response_query_norm.json()
+    assert not any(item["id"] == feat_item["id"] for item in norm_items)
+    assert any(item["id"] == norm_item["id"] for item in norm_items)
+
+    # Clean up
+    db_item1 = portfolio_service.get_item(db, uuid.UUID(feat_item["id"]))
+    db_item2 = portfolio_service.get_item(db, uuid.UUID(norm_item["id"]))
+    db_item3 = portfolio_service.get_item(db, uuid.UUID(inv_item["id"]))
+    for db_item in [db_item1, db_item2, db_item3]:
+        if db_item:
+            db.query(portfolio_service.PortfolioItemVersion).filter_by(portfolio_item_id=db_item.id).delete()
+            db.delete(db_item)
+    db.commit()
+
+
+def test_resume_single_active_constraint(headers, db):
+    # Retrieve the Resume section
+    sec = db.query(portfolio_service.PortfolioSection).filter_by(slug="resume").first()
+    assert sec is not None
+
+    # Create Resume 1 (published)
+    payload1 = {
+        "section_id": str(sec.id),
+        "title": "Resume 1",
+        "status": "published",
+        "display_order": 0
+    }
+    response1 = client.post(f"{settings.API_V1_STR}/portfolio/items", json=payload1, headers=headers)
+    assert response1.status_code == 201
+    res1 = response1.json()
+    assert res1["status"] == "published"
+
+    # Create Resume 2 (published)
+    payload2 = {
+        "section_id": str(sec.id),
+        "title": "Resume 2",
+        "status": "published",
+        "display_order": 1
+    }
+    response2 = client.post(f"{settings.API_V1_STR}/portfolio/items", json=payload2, headers=headers)
+    assert response2.status_code == 201
+    res2 = response2.json()
+    assert res2["status"] == "published"
+
+    # Refresh Resume 1 from DB
+    db_res1 = portfolio_service.get_item(db, uuid.UUID(res1["id"]))
+    # Should have been downgraded to draft
+    assert db_res1.status == "draft"
+
+    # Create Resume 3 (draft) - should not downgrade Resume 2
+    payload3 = {
+        "section_id": str(sec.id),
+        "title": "Resume 3",
+        "status": "draft",
+        "display_order": 2
+    }
+    response3 = client.post(f"{settings.API_V1_STR}/portfolio/items", json=payload3, headers=headers)
+    assert response3.status_code == 201
+    res3 = response3.json()
+    
+    db_res2 = portfolio_service.get_item(db, uuid.UUID(res2["id"]))
+    assert db_res2.status == "published"
+
+    # Update Resume 3 to published
+    update_payload = {"status": "published"}
+    response_update = client.put(f"{settings.API_V1_STR}/portfolio/items/{res3['id']}", json=update_payload, headers=headers)
+    assert response_update.status_code == 200
+    
+    # Resume 2 should now be draft, Resume 3 should be published
+    db.expire_all()
+    db_res2_refreshed = portfolio_service.get_item(db, uuid.UUID(res2["id"]))
+    assert db_res2_refreshed.status == "draft"
+    db_res3_refreshed = portfolio_service.get_item(db, uuid.UUID(res3["id"]))
+    assert db_res3_refreshed.status == "published"
+
+    # Clean up
+    for r_id in [res1["id"], res2["id"], res3["id"]]:
+        db_item = portfolio_service.get_item(db, uuid.UUID(r_id))
+        if db_item:
+            db.query(portfolio_service.PortfolioItemVersion).filter_by(portfolio_item_id=db_item.id).delete()
+            db.delete(db_item)
+    db.commit()
+
+
+def test_idempotent_seeding(db):
+    from app.core.seeding import seed_database
+    # Running seed_database should be safe and not fail or create duplicate sections
+    initial_sections_count = db.query(portfolio_service.PortfolioSection).count()
+    
+    seed_database(db)
+    
+    post_sections_count = db.query(portfolio_service.PortfolioSection).count()
+    assert initial_sections_count == post_sections_count
 

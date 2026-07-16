@@ -43,6 +43,7 @@ class PortfolioItemBase(BaseModel):
     custom_metadata: Dict[str, Any] = {}
     status: str = "draft"
     display_order: int = 0
+    is_featured: bool = False
 
 
 class PortfolioItemCreate(PortfolioItemBase):
@@ -57,6 +58,7 @@ class PortfolioItemUpdate(BaseModel):
     status: Optional[str] = None
     display_order: Optional[int] = None
     section_id: Optional[uuid.UUID] = None
+    is_featured: Optional[bool] = None
 
 
 class PortfolioItemOut(PortfolioItemBase):
@@ -81,6 +83,7 @@ class PortfolioItemVersionOut(BaseModel):
     content_body: Optional[str] = None
     custom_metadata: Dict[str, Any] = {}
     created_by_user_id: Optional[uuid.UUID] = None
+    is_featured: bool
     created_at: datetime
     updated_at: datetime
 

@@ -62,6 +62,7 @@ class PortfolioItem(Base, BaseModelMixin):
     status: Mapped[str] = mapped_column(String(50), default="draft") # draft, published
     display_order: Mapped[int] = mapped_column(Integer, default=0)
     current_version: Mapped[int] = mapped_column(Integer, default=1)
+    is_featured: Mapped[bool] = mapped_column(default=False)
 
     section: Mapped["PortfolioSection"] = relationship("PortfolioSection", back_populates="items")
     versions: Mapped[List["PortfolioItemVersion"]] = relationship(
@@ -101,6 +102,7 @@ class PortfolioItemVersion(Base, BaseModelMixin):
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
+    is_featured: Mapped[bool] = mapped_column(default=False)
 
     portfolio_item: Mapped["PortfolioItem"] = relationship("PortfolioItem", back_populates="versions")
 
