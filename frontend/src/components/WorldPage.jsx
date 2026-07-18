@@ -15,7 +15,7 @@ export default function WorldPage() {
         const [secRes, itemsRes] = await Promise.all([
           fetch('/api/v1/portfolio/sections'),
           // Public endpoint returns only published, non-deleted items
-          fetch('/api/v1/portfolio/items')
+          fetch('/api/v1/portfolio/items?status=published')
         ]);
 
         if (secRes.ok && itemsRes.ok) {

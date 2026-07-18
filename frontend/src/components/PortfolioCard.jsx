@@ -14,7 +14,13 @@ export default function PortfolioCard({ item }) {
   };
 
   const slug = getItemSlug(item);
-  const mediaUrl = item.custom_metadata?.media_url;
+  const metadata = item.custom_metadata || {};
+  
+  // Resolve card cover image URL with fallback chain
+  const mediaUrl = metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]);
+
+  // Determine tags to render as badges
+  const tagsToRender = metadata.tech_stack || metadata.artwork_tags || metadata.related_tech || metadata.tags || [];
 
   return (
     <Link
@@ -57,6 +63,72 @@ export default function PortfolioCard({ item }) {
           justifyContent: 'center',
         }}
       >
+        {/* Featured badge overlay */}
+        {item.is_featured && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: '12px', 
+              left: '12px', 
+              zIndex: 5, 
+              backgroundColor: 'rgba(245, 158, 11, 0.95)', 
+              color: '#ffffff', 
+              fontSize: '10px', 
+              fontWeight: 'bold', 
+              padding: '4px 8px', 
+              borderRadius: '12px',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px'
+            }}
+          >
+            ★ FEATURED
+          </div>
+        )}
+
+        {/* Project completion status overlay */}
+        {metadata.project_status && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: '12px', 
+              right: '12px', 
+              zIndex: 5, 
+              backgroundColor: 'rgba(0, 0, 0, 0.75)', 
+              color: 'rgba(255,255,255,0.9)', 
+              fontSize: '10px', 
+              fontWeight: '600', 
+              padding: '4px 8px', 
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            {metadata.project_status}
+          </div>
+        )}
+
+        {/* Artwork category overlay */}
+        {metadata.category && !metadata.project_status && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: '12px', 
+              right: '12px', 
+              zIndex: 5, 
+              backgroundColor: 'rgba(139, 92, 246, 0.85)', 
+              color: '#ffffff', 
+              fontSize: '10px', 
+              fontWeight: '600', 
+              padding: '4px 8px', 
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+          >
+            {metadata.category}
+          </div>
+        )}
+
         {mediaUrl ? (
           mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
             <video
@@ -175,8 +247,15 @@ export default function PortfolioCard({ item }) {
           </p>
         )}
 
+        {/* Medium metadata indicator for Artwork */}
+        {metadata.medium && (
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '4px' }}>
+            Medium: {metadata.medium}
+          </div>
+        )}
+
         {/* Tags indicator */}
-        {item.custom_metadata?.tags && Array.isArray(item.custom_metadata.tags) && (
+        {tagsToRender.length > 0 && (
           <div
             style={{
               display: 'flex',
@@ -186,7 +265,7 @@ export default function PortfolioCard({ item }) {
               paddingTop: '10px',
             }}
           >
-            {item.custom_metadata.tags.slice(0, 3).map((tag) => (
+            {tagsToRender.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 style={{

@@ -18,6 +18,11 @@ export default function MediaManager() {
       if (res.ok) {
         const data = await res.json();
         setMediaList(data);
+      } else if (res.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.setItem('redirect_url', window.location.pathname + window.location.search);
+        localStorage.setItem('auth_message', 'Your session expired. Please sign in again.');
+        window.location.href = '/login';
       }
     } catch (e) {
       // Gracefully catch fetch exceptions
@@ -49,6 +54,13 @@ export default function MediaManager() {
       if (res.ok) {
         fetchMedia();
       } else {
+        if (res.status === 401) {
+          localStorage.removeItem('access_token');
+          localStorage.setItem('redirect_url', window.location.pathname + window.location.search);
+          localStorage.setItem('auth_message', 'Your session expired. Please sign in again.');
+          window.location.href = '/login';
+          return;
+        }
         alert('File upload failed.');
       }
     } catch (err) {
@@ -75,6 +87,13 @@ export default function MediaManager() {
           setSelectedMedia(null);
         }
       } else {
+        if (res.status === 401) {
+          localStorage.removeItem('access_token');
+          localStorage.setItem('redirect_url', window.location.pathname + window.location.search);
+          localStorage.setItem('auth_message', 'Your session expired. Please sign in again.');
+          window.location.href = '/login';
+          return;
+        }
         alert('Failed to delete media asset.');
       }
     } catch (err) {}

@@ -8,7 +8,7 @@ from app.schemas.user import UserCreate
 
 def seed_database(db: Session):
     # 1. Seed Default Admin User
-    user_count = db.query(User).filter(User.is_deleted == False).count()
+    user_count = db.query(User).count()
     if user_count == 0:
         user_in = UserCreate(
             email=settings.ADMIN_EMAIL,
@@ -89,24 +89,6 @@ def seed_database(db: Session):
             db.add(db_sec)
             db.flush()
 
-    # 4. Clean up default seeded demo items if they exist
-    demo_titles = ["Cycle.ai App", "Lily Watercolor", "Technical Resume"]
-    demo_slugs = ["cycle-ai", "lily-watercolor", "technical-resume"]
-    
-    items = db.query(PortfolioItem).all()
-    deleted_any = False
-    for item in items:
-        is_demo = False
-        if item.title in demo_titles:
-            is_demo = True
-        elif item.custom_metadata and item.custom_metadata.get("slug") in demo_slugs:
-            is_demo = True
-            
-        if is_demo:
-            db.delete(item)
-            deleted_any = True
-            
-    if deleted_any:
-        db.flush()
+
 
     db.commit()

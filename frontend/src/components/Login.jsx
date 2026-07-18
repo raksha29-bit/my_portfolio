@@ -22,7 +22,16 @@ export default function Login({ onLoginSuccess }) {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [infoMessage, setInfoMessage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const msg = localStorage.getItem('auth_message');
+    if (msg) {
+      setInfoMessage(msg);
+      localStorage.removeItem('auth_message');
+    }
+  }, []);
 
   useEffect(() => {
     async function checkSetup() {
@@ -124,7 +133,14 @@ export default function Login({ onLoginSuccess }) {
       const loginData = await loginResponse.json();
       localStorage.setItem('access_token', loginData.access_token);
       onLoginSuccess(loginData.access_token);
-      navigate('/dashboard');
+      
+      const nextUrl = localStorage.getItem('redirect_url');
+      if (nextUrl) {
+        localStorage.removeItem('redirect_url');
+        navigate(nextUrl);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -157,7 +173,14 @@ export default function Login({ onLoginSuccess }) {
       const data = await response.json();
       localStorage.setItem('access_token', data.access_token);
       onLoginSuccess(data.access_token);
-      navigate('/dashboard');
+      
+      const nextUrl = localStorage.getItem('redirect_url');
+      if (nextUrl) {
+        localStorage.removeItem('redirect_url');
+        navigate(nextUrl);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -220,6 +243,26 @@ export default function Login({ onLoginSuccess }) {
             </div>
           )}
         </div>
+
+        {infoMessage && (
+          <div
+            style={{
+              padding: '10px 14px',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              color: 'var(--accent-color)',
+              fontSize: '14px',
+              borderRadius: 'var(--radius)',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <ShieldAlert size={16} />
+            <span>{infoMessage}</span>
+          </div>
+        )}
 
         {error && (
           <div

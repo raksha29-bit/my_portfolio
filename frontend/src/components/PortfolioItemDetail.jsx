@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Background from './Background';
-import { ArrowLeft, ExternalLink, Calendar, Code, Tag } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Calendar, Code, Tag, Award, Download, ShieldCheck } from 'lucide-react';
 import { marked } from 'marked';
-
 
 export default function PortfolioItemDetail() {
   const { itemSlug } = useParams();
@@ -25,7 +24,7 @@ export default function PortfolioItemDetail() {
         const itemData = await itemRes.json();
         setItem(itemData);
 
-        // 2. Fetch parent section details to build breadcrumbs and return path
+        // 2. Fetch parent section details
         if (itemData && itemData.section_id) {
           const sectionsRes = await fetch('/api/v1/portfolio/sections');
           if (sectionsRes.ok) {
@@ -53,7 +52,28 @@ export default function PortfolioItemDetail() {
     }
   };
 
-  const mediaUrl = item?.custom_metadata?.media_url;
+  if (loading) {
+    return (
+      <div style={{ width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+        <Background />
+        <span style={{ zIndex: 10 }}>Retrieving creation file record...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger-color)' }}>
+        <Background />
+        <span style={{ zIndex: 10 }}>{error}</span>
+      </div>
+    );
+  }
+
+  const metadata = item?.custom_metadata || {};
+  const mediaUrl = metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]);
+  const screenshots = metadata.screenshots || [];
+  const images = metadata.images || [];
 
   return (
     <div
@@ -69,11 +89,10 @@ export default function PortfolioItemDetail() {
         overflowY: 'auto',
       }}
     >
-      {/* Starry Night Atmosphere */}
       <Background />
 
       <div style={{ width: '100%', maxWidth: '800px', zIndex: 10 }}>
-        {/* Navigation Breadcrumbs / Back button */}
+        {/* Navigation Return Button */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '32px' }}>
           <button
             onClick={() => {
@@ -96,197 +115,347 @@ export default function PortfolioItemDetail() {
           </button>
         </div>
 
-        {loading ? (
-          <div style={{ color: 'var(--text-secondary)', padding: '60px 0', textAlign: 'center' }}>
-            Retrieving creation file record...
-          </div>
-        ) : error ? (
-          <div style={{ color: 'var(--danger-color)', padding: '60px 0', textAlign: 'center' }}>
-            {error}
-          </div>
-        ) : (
-          <article className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            
-            {/* Media Banner Section */}
-            {mediaUrl && (
-              <div
-                style={{
-                  width: '100%',
-                  maxHeight: '440px',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  overflow: 'hidden',
-                  background: 'rgba(255, 255, 255, 0.01)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-                }}
-              >
-                {mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                  <video
-                    src={mediaUrl}
-                    controls
-                    autoPlay
-                    muted
-                    loop
-                    style={{ width: '100%', maxHeight: '440px', objectFit: 'contain' }}
-                  />
-                ) : (
-                  <img
-                    src={mediaUrl}
-                    alt={item.title}
-                    style={{ width: '100%', maxHeight: '440px', objectFit: 'contain' }}
-                  />
-                )}
-              </div>
-            )}
-
+        <article style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          
+          {/* Cover Media Banner */}
+          {mediaUrl && (
             <div
               style={{
-                padding: '32px',
-                background: 'var(--glass-card-bg)',
-                border: 'var(--glass-card-border)',
+                width: '100%',
+                maxHeight: '440px',
                 borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+                background: 'rgba(255, 255, 255, 0.01)',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                transition: 'background var(--transition-speed) var(--transition-easing), border-color var(--transition-speed) var(--transition-easing)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
               }}
             >
-              <h1 style={{ fontSize: '32px', fontWeight: '600', color: 'var(--text-title)', margin: 0, letterSpacing: '0.5px' }}>
-                {item.title}
-              </h1>
-
-              {item.description && (
-                <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'var(--text-secondary)', margin: 0, fontWeight: '400' }}>
-                  {item.description}
-                </p>
+              {mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                <video
+                  src={mediaUrl}
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  style={{ width: '100%', maxHeight: '440px', objectFit: 'contain' }}
+                />
+              ) : (
+                <img
+                  src={mediaUrl}
+                  alt={item.title}
+                  style={{ width: '100%', height: '100%', maxHeight: '440px', objectFit: 'cover' }}
+                />
               )}
+            </div>
+          )}
 
-              {/* Specs line metadata */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '24px',
-                  fontSize: '13px',
-                  color: 'var(--text-secondary)',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                  paddingTop: '16px',
-                  marginTop: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Calendar size={14} style={{ color: 'var(--accent-color)' }} />
-                  <span>Updated {new Date(item.updated_at).toLocaleDateString()}</span>
+          <div
+            style={{
+              padding: '32px',
+              background: 'var(--glass-card-bg)',
+              border: 'var(--glass-card-border)',
+              borderRadius: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(20px)',
+              transition: 'background var(--transition-speed) var(--transition-easing), border-color var(--transition-speed) var(--transition-easing)',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'start', flexDirection: 'row', flexWrap: 'wrap' }}>
+              {parentSection && parentSection.slug === 'achievements' && (metadata.badge_url || metadata.badge) && (
+                <div style={{ width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img 
+                    src={metadata.badge_url || metadata.badge} 
+                    alt="Badge" 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))' }} 
+                  />
+                </div>
+              )}
+              <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                  <h1 style={{ fontSize: '30px', fontWeight: '600', color: 'var(--text-title)', margin: 0 }}>
+                    {item.title}
+                  </h1>
+                  {item.is_featured && (
+                    <span className="badge badge-published" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: 'var(--warning-color)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                      ★ Featured
+                    </span>
+                  )}
+                </div>
+                {item.description && (
+                  <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'var(--text-secondary)', margin: 0 }}>
+                    {item.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Spec details by section type */}
+            {parentSection && parentSection.slug === 'projects' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px' }}>
+                  {metadata.project_status && (
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Status:</span> <strong style={{ color: 'var(--text-title)' }}>{metadata.project_status}</strong></div>
+                  )}
+                  {metadata.completion_date && (
+                    <div><span style={{ color: 'var(--text-secondary)' }}>Completion:</span> <strong style={{ color: 'var(--text-title)' }}>{new Date(metadata.completion_date).toLocaleDateString()}</strong></div>
+                  )}
                 </div>
 
-                {parentSection && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Code size={14} style={{ color: 'var(--accent-color)' }} />
-                    <span>Constellation: {parentSection.name}</span>
+                {metadata.tech_stack && metadata.tech_stack.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Tech Stack</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {metadata.tech_stack.map(tech => (
+                        <span key={tech} className="badge badge-published" style={{ fontSize: '10px' }}>{tech}</span>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Tags pills */}
-              {item.custom_metadata?.tags && Array.isArray(item.custom_metadata.tags) && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                  {item.custom_metadata.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
-                        fontSize: '11px',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.06)',
-                        color: 'var(--text-secondary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <Tag size={10} />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Markdown content body rendering area */}
-            {item.content_body && (
-              <div
-                className="markdown-body"
-                dangerouslySetInnerHTML={getMarkdownHtml(item.content_body)}
-                style={{
-                  fontSize: '15px',
-                  lineHeight: '1.8',
-                  color: 'rgba(255,255,255,0.9)',
-                  padding: '12px',
-                }}
-              />
             )}
 
-            {/* External Call to action links (Live Demo / Github Repo) if present in metadata */}
-            {(item.custom_metadata?.demo_url || item.custom_metadata?.github_url) && (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '16px',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                  paddingTop: '24px',
-                  marginTop: '12px',
-                }}
-              >
-                {item.custom_metadata.demo_url && (
-                  <a
-                    href={item.custom_metadata.demo_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary btn-sm"
-                    style={{
-                      borderRadius: '24px',
-                      padding: '10px 24px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <ExternalLink size={14} />
-                    Launch Live Project
-                  </a>
+            {parentSection && parentSection.slug === 'artwork' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                {metadata.category && (
+                  <div><span style={{ color: 'var(--text-secondary)' }}>Category:</span> <strong style={{ color: 'var(--text-title)' }}>{metadata.category}</strong></div>
                 )}
-
-                {item.custom_metadata.github_url && (
-                  <a
-                    href={item.custom_metadata.github_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-secondary btn-sm"
-                    style={{
-                      borderRadius: '24px',
-                      padding: '10px 24px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <ExternalLink size={14} />
-                    View Code Repository
-                  </a>
+                {metadata.medium && (
+                  <div><span style={{ color: 'var(--text-secondary)' }}>Medium:</span> <strong style={{ color: 'var(--text-title)' }}>{metadata.medium}</strong></div>
                 )}
               </div>
             )}
-          </article>
-        )}
+
+            {/* Standard tags / metadata line */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '24px',
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                paddingTop: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Calendar size={14} style={{ color: 'var(--accent-color)' }} />
+                <span>Updated {new Date(item.updated_at).toLocaleDateString()}</span>
+              </div>
+
+              {parentSection && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Code size={14} style={{ color: 'var(--accent-color)' }} />
+                  <span>Constellation: {parentSection.name}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Detailed Markdown Content body */}
+          {item.content_body && (
+            <div
+              className="markdown-body"
+              dangerouslySetInnerHTML={getMarkdownHtml(item.content_body)}
+              style={{
+                fontSize: '15px',
+                lineHeight: '1.8',
+                color: 'rgba(255,255,255,0.9)',
+                padding: '12px',
+              }}
+            />
+          )}
+
+          {/* Project Screenshot Gallery */}
+          {screenshots.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: '18px', color: 'var(--text-title)', marginBottom: '16px' }}>Gallery & Screenshots</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                {screenshots.map((scr, idx) => (
+                  <a 
+                    key={idx} 
+                    href={scr} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    style={{ 
+                      borderRadius: '12px', 
+                      overflow: 'hidden', 
+                      border: '1px solid var(--border-color)', 
+                      display: 'block',
+                      transition: 'transform 0.2s ease, border-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                      e.currentTarget.style.borderColor = 'var(--accent-color)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                    }}
+                  >
+                    <img src={scr} alt={`Screenshot ${idx + 1}`} style={{ width: '100%', height: '130px', objectFit: 'cover' }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Artwork Image Gallery */}
+          {images.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: '18px', color: 'var(--text-title)', marginBottom: '16px' }}>Artwork Gallery</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                {images.map((img, idx) => (
+                  <a 
+                    key={idx} 
+                    href={img} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    style={{ 
+                      borderRadius: '12px', 
+                      overflow: 'hidden', 
+                      border: '1px solid var(--border-color)', 
+                      display: 'block',
+                      transition: 'transform 0.2s ease, border-color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.03)';
+                      e.currentTarget.style.borderColor = 'var(--accent-color)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                    }}
+                  >
+                    <img src={img} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Achievements Certificate Preview */}
+          {parentSection && parentSection.slug === 'achievements' && (metadata.certificate_url || metadata.certificate) && (
+            <div style={{ background: 'var(--glass-card-bg)', border: 'var(--glass-card-border)', padding: '24px', borderRadius: '16px' }}>
+              <h3 style={{ fontSize: '18px', color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldCheck size={18} style={{ color: 'var(--accent-color)' }} />
+                <span>Certificate Attachment</span>
+              </h3>
+              {(metadata.certificate_url || metadata.certificate).match(/\.(pdf)$/i) ? (
+                <div style={{ height: '500px', width: '100%', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: '#ffffff' }}>
+                  <object data={metadata.certificate_url || metadata.certificate} type="application/pdf" width="100%" height="100%">
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#333333' }}>
+                      <a href={metadata.certificate_url || metadata.certificate} download className="btn btn-primary">
+                        <Download size={14} /> Download Certificate PDF
+                      </a>
+                    </div>
+                  </object>
+                </div>
+              ) : (
+                <img src={metadata.certificate_url || metadata.certificate} alt="Certificate" style={{ width: '100%', height: 'auto', maxHeight: '400px', objectFit: 'contain', borderRadius: '8px' }} />
+              )}
+            </div>
+          )}
+
+          {/* External Call to action links (Live Demo / Github Repo) */}
+          {(metadata.live_demo || metadata.github_repo || metadata.github_link || metadata.documentation_url || metadata.documentation_link || metadata.external_link) && (
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                paddingTop: '24px',
+                marginTop: '12px',
+                flexWrap: 'wrap'
+              }}
+            >
+              {metadata.live_demo && (
+                <a
+                  href={metadata.live_demo}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary"
+                  style={{
+                    borderRadius: '24px',
+                    padding: '10px 24px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  Launch Live Project
+                </a>
+              )}
+
+              {(metadata.github_repo || metadata.github_link) && (
+                <a
+                  href={metadata.github_repo || metadata.github_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary"
+                  style={{
+                    borderRadius: '24px',
+                    padding: '10px 24px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  View Code Repository
+                </a>
+              )}
+
+              {(metadata.documentation_url || metadata.documentation_link) && (
+                <a
+                  href={metadata.documentation_url || metadata.documentation_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary"
+                  style={{
+                    borderRadius: '24px',
+                    padding: '10px 24px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  Read Documentation
+                </a>
+              )}
+
+              {metadata.external_link && parentSection && parentSection.slug === 'achievements' && (
+                <a
+                  href={metadata.external_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary"
+                  style={{
+                    borderRadius: '24px',
+                    padding: '10px 24px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ExternalLink size={14} />
+                  Verify Credential
+                </a>
+              )}
+            </div>
+          )}
+        </article>
       </div>
     </div>
   );

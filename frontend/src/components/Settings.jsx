@@ -53,6 +53,8 @@ export default function Settings({ onLogout }) {
 
   const handle401 = () => {
     localStorage.removeItem('access_token');
+    localStorage.setItem('redirect_url', window.location.pathname + window.location.search);
+    localStorage.setItem('auth_message', 'Your session expired. Please sign in again.');
     if (onLogout) onLogout();
     navigate('/login');
   };
