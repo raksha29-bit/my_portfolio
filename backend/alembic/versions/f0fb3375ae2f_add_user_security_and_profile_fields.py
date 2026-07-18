@@ -25,7 +25,7 @@ def upgrade() -> None:
     op.add_column('users', sa.Column('display_name', sa.String(length=255), nullable=True))
     op.add_column('users', sa.Column('avatar_url', sa.String(length=1024), nullable=True))
     op.add_column('users', sa.Column('is_admin', sa.Boolean(), server_default=sa.text('1'), nullable=False))
-    op.add_column('users', sa.Column('failed_login_attempts', sa.Integer(), server_default=sa.text('0'), nullable=False))
+    op.add_column('users', sa.Column('failed_login_attempts', sa.Integer(), server_default=sa.text('false'), nullable=False))
     op.add_column('users', sa.Column('locked_until', sa.DateTime(timezone=True), nullable=True))
     op.add_column('users', sa.Column('last_login', sa.DateTime(timezone=True), nullable=True))
     op.add_column('users', sa.Column('user_agent', sa.String(length=512), nullable=True))
