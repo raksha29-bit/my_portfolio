@@ -6,6 +6,7 @@ import {
   ArrowLeft, Search, Tag, Inbox, Calendar, Code, ExternalLink, 
   Download, Award, User, Briefcase, Mail, MapPin, Sparkles 
 } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function PortfolioSectionPage() {
   const { sectionSlug } = useParams();
@@ -24,7 +25,7 @@ export default function PortfolioSectionPage() {
       try {
         setLoading(true);
         // 1. Fetch section by slug
-        const secRes = await fetch(`/api/v1/portfolio/sections/by-slug/${sectionSlug}`);
+        const secRes = await fetch(resolveUrl(`/api/v1/portfolio/sections/by-slug/${sectionSlug}`));
         if (!secRes.ok) {
           throw new Error('Constellation section not found.');
         }
@@ -33,7 +34,7 @@ export default function PortfolioSectionPage() {
 
         if (secData) {
           // 2. Fetch items for this section
-          const itemsRes = await fetch(`/api/v1/portfolio/items?section_id=${secData.id}&status=published`);
+          const itemsRes = await fetch(resolveUrl(`/api/v1/portfolio/items?section_id=${secData.id}&status=published`));
           if (itemsRes.ok) {
             const itemsData = await itemsRes.json();
             // Filter out any drafts/archives for the public view
@@ -175,7 +176,7 @@ export default function PortfolioSectionPage() {
             }}
           >
             {metadata.avatar_url || metadata.avatar ? (
-              <img src={metadata.avatar_url || metadata.avatar} alt={profile.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={resolveUrl(metadata.avatar_url || metadata.avatar)} alt={profile.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                 <User size={64} />
@@ -328,7 +329,7 @@ export default function PortfolioSectionPage() {
               }}
             >
               {metadata.badge_url ? (
-                <img src={metadata.badge_url} alt="Badge" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
+                <img src={resolveUrl(metadata.badge_url)} alt="Badge" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
               ) : (
                 <div style={{ width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '8px', color: 'var(--accent-color)' }}>
                   <Award size={36} />

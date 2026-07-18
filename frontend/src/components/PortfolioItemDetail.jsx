@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Background from './Background';
 import { ArrowLeft, ExternalLink, Calendar, Code, Tag, Award, Download, ShieldCheck } from 'lucide-react';
 import { marked } from 'marked';
+import { resolveUrl } from '../utils/api';
 
 export default function PortfolioItemDetail() {
   const { itemSlug } = useParams();
@@ -17,7 +18,7 @@ export default function PortfolioItemDetail() {
       try {
         setLoading(true);
         // 1. Fetch item by slug
-        const itemRes = await fetch(`/api/v1/portfolio/items/by-slug/${itemSlug}`);
+        const itemRes = await fetch(resolveUrl(`/api/v1/portfolio/items/by-slug/${itemSlug}`));
         if (!itemRes.ok) {
           throw new Error('Creations archive file not found.');
         }
@@ -26,7 +27,7 @@ export default function PortfolioItemDetail() {
 
         // 2. Fetch parent section details
         if (itemData && itemData.section_id) {
-          const sectionsRes = await fetch('/api/v1/portfolio/sections');
+          const sectionsRes = await fetch(resolveUrl('/api/v1/portfolio/sections'));
           if (sectionsRes.ok) {
             const sections = await sectionsRes.json();
             const parent = sections.find((s) => s.id === itemData.section_id);
@@ -71,9 +72,10 @@ export default function PortfolioItemDetail() {
   }
 
   const metadata = item?.custom_metadata || {};
-  const mediaUrl = metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]);
-  const screenshots = metadata.screenshots || [];
-  const images = metadata.images || [];
+  const rawMediaUrl = metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]);
+  const mediaUrl = rawMediaUrl ? resolveUrl(rawMediaUrl) : '';
+  const screenshots = (metadata.screenshots || []).map(resolveUrl);
+  const images = (metadata.images || []).map(resolveUrl);
 
   return (
     <div
@@ -170,7 +172,7 @@ export default function PortfolioItemDetail() {
               {parentSection && parentSection.slug === 'achievements' && (metadata.badge_url || metadata.badge) && (
                 <div style={{ width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <img 
-                    src={metadata.badge_url || metadata.badge} 
+                    src={resolveUrl(metadata.badge_url || metadata.badge)} 
                     alt="Badge" 
                     style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(139, 92, 246, 0.3))' }} 
                   />
@@ -340,27 +342,30 @@ export default function PortfolioItemDetail() {
           )}
 
           {/* Achievements Certificate Preview */}
-          {parentSection && parentSection.slug === 'achievements' && (metadata.certificate_url || metadata.certificate) && (
-            <div style={{ background: 'var(--glass-card-bg)', border: 'var(--glass-card-border)', padding: '24px', borderRadius: '16px' }}>
-              <h3 style={{ fontSize: '18px', color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShieldCheck size={18} style={{ color: 'var(--accent-color)' }} />
-                <span>Certificate Attachment</span>
-              </h3>
-              {(metadata.certificate_url || metadata.certificate).match(/\.(pdf)$/i) ? (
-                <div style={{ height: '500px', width: '100%', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                  <object data={metadata.certificate_url || metadata.certificate} type="application/pdf" width="100%" height="100%">
-                    <div style={{ padding: '24px', textAlign: 'center', color: '#333333' }}>
-                      <a href={metadata.certificate_url || metadata.certificate} download className="btn btn-primary">
-                        <Download size={14} /> Download Certificate PDF
-                      </a>
-                    </div>
-                  </object>
-                </div>
-              ) : (
-                <img src={metadata.certificate_url || metadata.certificate} alt="Certificate" style={{ width: '100%', height: 'auto', maxHeight: '400px', objectFit: 'contain', borderRadius: '8px' }} />
-              )}
-            </div>
-          )}
+          {parentSection && parentSection.slug === 'achievements' && (metadata.certificate_url || metadata.certificate) && (() => {
+            const certUrl = resolveUrl(metadata.certificate_url || metadata.certificate);
+            return (
+              <div style={{ background: 'var(--glass-card-bg)', border: 'var(--glass-card-border)', padding: '24px', borderRadius: '16px' }}>
+                <h3 style={{ fontSize: '18px', color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={18} style={{ color: 'var(--accent-color)' }} />
+                  <span>Certificate Attachment</span>
+                </h3>
+                {certUrl.match(/\.(pdf)$/i) ? (
+                  <div style={{ height: '500px', width: '100%', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: '#ffffff' }}>
+                    <object data={certUrl} type="application/pdf" width="100%" height="100%">
+                      <div style={{ padding: '24px', textAlign: 'center', color: '#333333' }}>
+                        <a href={certUrl} download className="btn btn-primary">
+                          <Download size={14} /> Download Certificate PDF
+                        </a>
+                      </div>
+                    </object>
+                  </div>
+                ) : (
+                  <img src={certUrl} alt="Certificate" style={{ width: '100%', height: 'auto', maxHeight: '400px', objectFit: 'contain', borderRadius: '8px' }} />
+                )}
+              </div>
+            );
+          })()}
 
           {/* External Call to action links (Live Demo / Github Repo) */}
           {(metadata.live_demo || metadata.github_repo || metadata.github_link || metadata.documentation_url || metadata.documentation_link || metadata.external_link) && (

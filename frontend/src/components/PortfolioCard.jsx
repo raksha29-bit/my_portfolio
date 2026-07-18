@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FileText, Eye } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function PortfolioCard({ item }) {
   // Generate the URL slug dynamically if not set explicitly in metadata
@@ -17,7 +18,7 @@ export default function PortfolioCard({ item }) {
   const metadata = item.custom_metadata || {};
   
   // Resolve card cover image URL with fallback chain
-  const mediaUrl = metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]);
+  const mediaUrl = resolveUrl(metadata.cover_image || metadata.media_url || (metadata.screenshots && metadata.screenshots[0]) || (metadata.images && metadata.images[0]));
 
   // Determine tags to render as badges
   const tagsToRender = metadata.tech_stack || metadata.artwork_tags || metadata.related_tech || metadata.tags || [];

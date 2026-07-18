@@ -1,12 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, FolderOpen, Image, Settings, LogOut, ShieldAlert } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function Sidebar({ onLogout }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/v1/auth/logout', { method: 'POST' });
+      await fetch(resolveUrl('/api/v1/auth/logout'), { method: 'POST' });
     } catch (e) {
       // Ignore network errors on logout
     }

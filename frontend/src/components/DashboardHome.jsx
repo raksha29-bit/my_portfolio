@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Layers, FileText, FileEdit, HardDrive, Clock, ArrowRight } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function DashboardHome() {
   const [sections, setSections] = useState([]);
@@ -15,9 +16,9 @@ export default function DashboardHome() {
 
         // Fetch all resources in parallel
         const [secRes, itemsRes, mediaRes] = await Promise.all([
-          fetch('/api/v1/portfolio/sections'),
-          fetch('/api/v1/portfolio/items?include_deleted=true', { headers }),
-          fetch('/api/v1/media/', { headers }),
+          fetch(resolveUrl('/api/v1/portfolio/sections')),
+          fetch(resolveUrl('/api/v1/portfolio/items?include_deleted=true'), { headers }),
+          fetch(resolveUrl('/api/v1/media/'), { headers }),
         ]);
 
         if (secRes.ok && itemsRes.ok && mediaRes.ok) {
@@ -246,7 +247,7 @@ export default function DashboardHome() {
                   >
                     {media.resource_type === 'image' ? (
                       <img
-                        src={media.secure_url}
+                        src={resolveUrl(media.secure_url)}
                         alt=""
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />

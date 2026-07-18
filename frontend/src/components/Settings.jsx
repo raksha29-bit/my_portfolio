@@ -4,6 +4,13 @@ import {
   Shield, HardDrive, Cpu, Database, User, Key, Monitor, 
   LogOut, Upload, Image as ImageIcon, AlertTriangle, CheckCircle 
 } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
+
+const fetch = (input, init) => {
+  const target = typeof input === 'string' ? resolveUrl(input) : input;
+  return window.fetch(target, init);
+};
+
 
 function parseUserAgent(ua) {
   if (!ua) return { os: 'Unknown OS', browser: 'Unknown Browser' };
@@ -456,7 +463,7 @@ export default function Settings({ onLogout }) {
                     }}
                   >
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={resolveUrl(avatarUrl)} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <ImageIcon size={20} style={{ opacity: 0.4 }} />
                     )}

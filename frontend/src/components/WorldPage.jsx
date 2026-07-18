@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Background from './Background';
 import { Sparkles, Shield } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function WorldPage() {
   const [sections, setSections] = useState([]);
@@ -13,9 +14,9 @@ export default function WorldPage() {
     const fetchData = async () => {
       try {
         const [secRes, itemsRes] = await Promise.all([
-          fetch('/api/v1/portfolio/sections'),
+          fetch(resolveUrl('/api/v1/portfolio/sections')),
           // Public endpoint returns only published, non-deleted items
-          fetch('/api/v1/portfolio/items?status=published')
+          fetch(resolveUrl('/api/v1/portfolio/items?status=published'))
         ]);
 
         if (secRes.ok && itemsRes.ok) {

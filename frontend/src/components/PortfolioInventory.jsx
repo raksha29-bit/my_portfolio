@@ -3,6 +3,13 @@ import {
   Plus, Trash, RotateCcw, History, Edit, ArrowUp, ArrowDown, 
   Eye, Search, Layers, FileText, Upload, Image as ImageIcon, Star, Menu 
 } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
+
+const fetch = (input, init) => {
+  const target = typeof input === 'string' ? resolveUrl(input) : input;
+  return window.fetch(target, init);
+};
+
 
 // ==============================================================================
 // HELPERS & SUBCOMPONENTS
@@ -121,7 +128,7 @@ function ReorderableMediaList({ urls = [], onChange, onOpenPicker }) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src={url} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+              <img src={resolveUrl(url)} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
               <span style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {url.split('/').pop()}
               </span>
@@ -291,7 +298,7 @@ function MediaPicker({ onSelect, onClose, accept, maxSize, pickerTarget }) {
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                 >
                   {item.resource_type === 'image' ? (
-                    <img src={item.secure_url} alt="Media" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <img src={resolveUrl(item.secure_url)} alt="Media" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px' }} />
                   ) : (
                     <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
                       {item.resource_type === 'video' ? '🎬 Video' : '📄 File'}
@@ -1306,7 +1313,7 @@ export default function PortfolioInventory() {
                       </div>
                       {(itemMetadata.avatar_url || itemMetadata.avatar) && (
                         <div style={{ marginTop: '8px' }}>
-                          <img src={itemMetadata.avatar_url || itemMetadata.avatar} alt="Profile Preview" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={resolveUrl(itemMetadata.avatar_url || itemMetadata.avatar)} alt="Profile Preview" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
                         </div>
                       )}
                     </div>
@@ -1413,7 +1420,7 @@ export default function PortfolioInventory() {
                         </div>
                         {itemMetadata.cover_image && (
                           <div style={{ marginTop: '8px' }}>
-                            <img src={itemMetadata.cover_image} alt="Cover Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                            <img src={resolveUrl(itemMetadata.cover_image)} alt="Cover Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                           </div>
                         )}
                       </div>

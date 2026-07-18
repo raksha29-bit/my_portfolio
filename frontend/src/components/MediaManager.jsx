@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Grid, List, Search, Upload, Trash, Eye, File, RefreshCw } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function MediaManager() {
   const [mediaList, setMediaList] = useState([]);
@@ -12,7 +13,7 @@ export default function MediaManager() {
   const fetchMedia = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const res = await fetch('/api/v1/media/', {
+      const res = await fetch(resolveUrl('/api/v1/media/'), {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -45,7 +46,7 @@ export default function MediaManager() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/v1/media/upload', {
+      const res = await fetch(resolveUrl('/api/v1/media/upload'), {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -76,7 +77,7 @@ export default function MediaManager() {
 
     const token = localStorage.getItem('access_token');
     try {
-      const res = await fetch(`/api/v1/media/${mediaId}`, {
+      const res = await fetch(resolveUrl(`/api/v1/media/${mediaId}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -196,7 +197,7 @@ export default function MediaManager() {
                 return (
                   <div key={media.id} className="media-card" onClick={() => setSelectedMedia(media)}>
                     {media.resource_type === 'image' ? (
-                      <img src={media.secure_url} alt="" className="media-thumbnail" />
+                      <img src={resolveUrl(media.secure_url)} alt="" className="media-thumbnail" />
                     ) : (
                       <div className="media-placeholder">
                         <File size={36} />
@@ -279,7 +280,7 @@ export default function MediaManager() {
                             }}
                           >
                             {media.resource_type === 'image' ? (
-                              <img src={media.secure_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={resolveUrl(media.secure_url)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                               <File size={16} style={{ color: 'var(--text-secondary)' }} />
                             )}
@@ -344,7 +345,7 @@ export default function MediaManager() {
               >
                 {selectedMedia.resource_type === 'image' ? (
                   <img
-                    src={selectedMedia.secure_url}
+                    src={resolveUrl(selectedMedia.secure_url)}
                     alt=""
                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                   />

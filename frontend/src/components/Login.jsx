@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Mail, ShieldAlert, Upload, Image as ImageIcon } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function Login({ onLoginSuccess }) {
   const [setupRequired, setSetupRequired] = useState(false);
@@ -36,7 +37,7 @@ export default function Login({ onLoginSuccess }) {
   useEffect(() => {
     async function checkSetup() {
       try {
-        const response = await fetch('/api/v1/auth/setup-status');
+        const response = await fetch(resolveUrl('/api/v1/auth/setup-status'));
         if (response.ok) {
           const data = await response.json();
           setSetupRequired(data.setup_required);
@@ -62,7 +63,7 @@ export default function Login({ onLoginSuccess }) {
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/v1/auth/upload-avatar', {
+      const response = await fetch(resolveUrl('/api/v1/auth/upload-avatar'), {
         method: 'POST',
         body: formData,
       });
@@ -94,7 +95,7 @@ export default function Login({ onLoginSuccess }) {
 
     try {
       // 1. Create administrator account
-      const response = await fetch('/api/v1/auth/setup-admin', {
+      const response = await fetch(resolveUrl('/api/v1/auth/setup-admin'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +115,7 @@ export default function Login({ onLoginSuccess }) {
       }
 
       // 2. Automatically log in after setup succeeds
-      const loginResponse = await fetch('/api/v1/auth/login', {
+      const loginResponse = await fetch(resolveUrl('/api/v1/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +155,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/v1/auth/login', {
+      const response = await fetch(resolveUrl('/api/v1/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -337,7 +338,7 @@ export default function Login({ onLoginSuccess }) {
                   }}
                 >
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={resolveUrl(avatarUrl)} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <ImageIcon size={20} style={{ opacity: 0.4 }} />
                   )}

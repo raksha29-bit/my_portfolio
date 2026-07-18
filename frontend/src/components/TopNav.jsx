@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { User as UserIcon } from 'lucide-react';
+import { resolveUrl } from '../utils/api';
 
 export default function TopNav({ pageTitle }) {
   const [adminInfo, setAdminInfo] = useState(null);
@@ -9,7 +10,7 @@ export default function TopNav({ pageTitle }) {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      const response = await fetch('/api/v1/auth/me', {
+      const response = await fetch(resolveUrl('/api/v1/auth/me'), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -65,7 +66,7 @@ export default function TopNav({ pageTitle }) {
       >
         {adminInfo?.avatar_url ? (
           <img 
-            src={adminInfo.avatar_url} 
+            src={resolveUrl(adminInfo.avatar_url)} 
             alt="Avatar" 
             style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} 
           />
