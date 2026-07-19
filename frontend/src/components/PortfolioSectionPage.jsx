@@ -349,7 +349,7 @@ export default function PortfolioSectionPage() {
                 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                   {metadata.certificate_url && (
-                    <a href={metadata.certificate_url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}>
+                    <a href={resolveUrl(metadata.certificate_url)} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}>
                       <Download size={12} /> View Certificate
                     </a>
                   )}
@@ -372,6 +372,7 @@ export default function PortfolioSectionPage() {
     if (filteredItems.length === 0) return renderEmptyState();
     const resume = filteredItems[0]; // Render the primary published resume
     const pdfUrl = resume.custom_metadata?.resume_pdf;
+    const resolvedPdfUrl = resolveUrl(pdfUrl);
 
     return (
       <div 
@@ -393,7 +394,7 @@ export default function PortfolioSectionPage() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '4px 0 0 0' }}>{resume.description}</p>
           </div>
           {pdfUrl && (
-            <a href={pdfUrl} download className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '24px' }}>
+            <a href={resolvedPdfUrl} download className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '24px' }}>
               <Download size={14} /> Download PDF
             </a>
           )}
@@ -402,14 +403,14 @@ export default function PortfolioSectionPage() {
         {pdfUrl ? (
           <div style={{ width: '100%', height: '700px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', backgroundColor: '#ffffff' }}>
             <object 
-              data={pdfUrl} 
+              data={resolvedPdfUrl} 
               type="application/pdf" 
               width="100%" 
               height="100%"
             >
               <div style={{ padding: '40px', textAlign: 'center', color: '#333333' }}>
                 <p style={{ fontWeight: '500', marginBottom: '16px' }}>Your browser does not support inline PDF previews.</p>
-                <a href={pdfUrl} download className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <a href={resolvedPdfUrl} download className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <Download size={14} /> Download Resume PDF
                 </a>
               </div>
